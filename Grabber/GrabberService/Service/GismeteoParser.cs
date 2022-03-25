@@ -29,20 +29,40 @@ namespace GrabberService.Service
             //пишем в лог, что всё ок?
         }
 
-        private async Task ParseMainPage(string htmlString)
+        private async Task<List<string>> ParseMainPage(string htmlString)
         {
             var parser = new HtmlParser();
             var document = await parser.ParseDocumentAsync(htmlString);
 
-            var classCities = document.GetElementsByClassName("cities-popular").FirstOrDefault();
-            
-            var links = classCities?.QuerySelectorAll("[class='list-item']");
+            return document.GetElementsByClassName("cities-popular")
+                .FirstOrDefault()?
+                .QuerySelectorAll("[class='list-item']")
+                .Select(l => l.FirstElementChild?.Attributes["href"]?.Value ?? string.Empty)
+                .ToList();
+        }
 
-            foreach (var link in links)
-            {
-                var sss = link.FirstElementChild?.Attributes["href"]?.Value;
-                Console.WriteLine(sss);
-            }
+        private async Task<List<CityWeather>> GetWeatherInfo(List<string> cityUrls)
+        {
+            var getTasks = cityUrls.Select(i => Task.Run(() => gismeteoGetter.GetCityWeatherPage(i))).ToList();
+            await Task.WhenAll(getTasks);
+            
+            var parseTasks = getTasks.Select(i => Task.Run(() => ParseWeatherInfo(i.Result))).ToList();
+            await Task.WhenAll(parseTasks);
+
+            return parseTasks.Select(i => i.Result).ToList();
+        }
+
+        private async Task<CityWeather> ParseWeatherInfo(string cityPageHtml)
+        {
+            var parser = new HtmlParser();
+            var document = await parser.ParseDocumentAsync(cityPageHtml);
+            
+            /*return document.GetElementsByClassName("cities-popular")
+                .FirstOrDefault()?
+                .QuerySelectorAll("[class='list-item']")
+                .Select(l => l.FirstElementChild?.Attributes["href"]?.Value ?? string.Empty)
+                .ToList();*/
+            return null;
         }
     }
 }

@@ -18,9 +18,9 @@ namespace GrabberService.Service
             return await httpClient.Get(string.Empty);
         }
 
-        public Task<string> GetCityWeatherPage(string cityName)
+        public async Task<string> GetCityWeatherPage(string cityName)
         {
-            return Task.FromResult(string.Empty);
+            return await httpClient.Get("/weather-volgograd-5089/10-days/");
         }
     }
 }

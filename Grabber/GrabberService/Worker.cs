@@ -31,7 +31,6 @@ namespace GrabberService
                 catch (Exception ex)
                 {
                     Console.WriteLine(ex);
-
                 }
                 finally
                 {

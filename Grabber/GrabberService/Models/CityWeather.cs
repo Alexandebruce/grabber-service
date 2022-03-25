@@ -1,7 +1,9 @@
-﻿namespace GrabberService.Models
+﻿using System.Collections.Generic;
+
+namespace GrabberService.Models
 {
     public class CityWeather
     {
-        public int TemperatureC { get; set; }
+        public List<int> TemperatureC { get; set; }
     }
 }
