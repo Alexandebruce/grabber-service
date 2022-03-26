@@ -20,21 +20,17 @@ namespace GrabberService.Service
 
         public async Task Do()
         {
-            //var mainPage = await gismeteoGetter.GetMainPage();
-            
-            //var weatherInfo = GetWeatherInfo(await ParseMainPage(mainPage));
+            var mainPage = await gismeteoGetter.GetMainPage();
+            var weatherInfo = await GetWeatherInfo(await ParseMainPage(mainPage));
             
 
             Console.WriteLine("Кек");
-            //получаем модель с городами
-            //запускаем асинхронно получение данных для всех городов
-            //waitAll все задачи получения городов и парсинга
             //формируем объекты для монго
             //пишем в монго данные
             //пишем в лог, что всё ок?
         }
 
-        private async Task<List<string>> ParseMainPage(string htmlString)
+        private async Task<Dictionary<string, string>> ParseMainPage(string htmlString)
         {
             var parser = new HtmlParser();
             var document = await parser.ParseDocumentAsync(htmlString);
@@ -42,29 +38,28 @@ namespace GrabberService.Service
             return document.GetElementsByClassName("cities-popular")
                 .FirstOrDefault()?
                 .QuerySelectorAll("[class='list-item']")
-                .Select(l => l.FirstElementChild?.Attributes["href"]?.Value ?? string.Empty)
-                .ToList();
+                .Select(l => new KeyValuePair<string, string>(
+                        l.FirstElementChild?.Attributes["href"]?.Value ?? string.Empty,
+                        l.FirstElementChild?.TextContent
+                    )).ToList().ToDictionary(x => x.Key, x => x.Value);
         }
 
-        private async Task<List<CityWeather>> GetWeatherInfo(List<string> cityUrls)
+        private async Task<List<CityWeather>> GetWeatherInfo(Dictionary<string, string> mainCities)
         {
-            var getTasks = cityUrls.Select(i => Task.Run(() => gismeteoGetter.GetCityWeatherPage(i))).ToList();
+            var getTasks = mainCities.Keys.Select(i => Task.Run(() => gismeteoGetter.GetCityWeatherPage(i, mainCities))).ToList();
             await Task.WhenAll(getTasks);
             
-            var parseTasks = getTasks.Select(i => Task.Run(() => ParseWeatherInfo(i.Result))).ToList();
+            var parseTasks = getTasks.Select(i => Task.Run(() => 
+                ParseWeatherInfo(i.Result.Value,i.Result.Key))).ToList();
             await Task.WhenAll(parseTasks);
 
             return parseTasks.Select(i => i.Result).ToList();
         }
 
-        private async Task<CityWeather> ParseWeatherInfo(string cityPageHtml)
+        private async Task<CityWeather> ParseWeatherInfo(string cityPageHtml, string cityName)
         {
             var parser = new HtmlParser();
             var document = await parser.ParseDocumentAsync(cityPageHtml);
-            
-            //var volgograd = await gismeteoGetter.GetCityWeatherPage("test");
-            //var parser = new HtmlParser();
-            //var document = await parser.ParseDocumentAsync(document);
 
             var classWidgetTemperature = document.GetElementsByClassName("widget-row-chart widget-row-chart-temperature")
                 .FirstOrDefault();
@@ -126,13 +121,12 @@ namespace GrabberService.Service
                     });
             }
 
-            var cityWeather = new CityWeather
+            return new CityWeather
             {
-                CityName = "Волгоград",
+                CityName = cityName,
                 Date = DateTime.Now,
                 WeatherByDays = dayWeatherList,
             };
-            return null;
         }
     }
 }

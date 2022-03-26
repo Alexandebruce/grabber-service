@@ -1,4 +1,5 @@
-﻿using System.Threading.Tasks;
+﻿using System.Collections.Generic;
+using System.Threading.Tasks;
 using GrabberService.Dao.Interfaces;
 using GrabberService.Service.Interfaces;
 
@@ -19,9 +20,9 @@ namespace GrabberService.Service
             return await httpClient.Get(string.Empty);
         }
 
-        public async Task<string> GetCityWeatherPage(string cityName)
+        public async Task<KeyValuePair<string,string>> GetCityWeatherPage(string cityLink, Dictionary<string, string> mainCities)
         {
-            return await httpClient.Get($"{cityName}{Postfix}");
+            return new (mainCities[cityLink], await httpClient.Get($"{cityLink}{Postfix}")) ;
         }
     }
 }

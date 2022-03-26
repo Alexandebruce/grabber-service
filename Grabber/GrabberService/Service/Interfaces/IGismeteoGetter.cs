@@ -1,10 +1,11 @@
-﻿using System.Threading.Tasks;
+﻿using System.Collections.Generic;
+using System.Threading.Tasks;
 
 namespace GrabberService.Service.Interfaces
 {
     public interface IGismeteoGetter
     {
         Task<string> GetMainPage();
-        Task<string> GetCityWeatherPage(string cityName);
+        Task<KeyValuePair<string, string>> GetCityWeatherPage(string cityLink, Dictionary<string, string> mainCities);
     }
 }
