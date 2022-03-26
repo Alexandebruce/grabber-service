@@ -30,11 +30,11 @@ namespace GrabberService
                 }
                 catch (Exception ex)
                 {
-                    Console.WriteLine(ex);
+                    logger.LogError("Worker exception: {time} {ex}", DateTimeOffset.Now, ex);
                 }
                 finally
                 {
-                    await Task.Delay(60 * 10000, stoppingToken);
+                    await Task.Delay(60 * 60 * 1000, stoppingToken);//60 * 60 * 1000 = one hour in milliseconds
                 }
             }
         }

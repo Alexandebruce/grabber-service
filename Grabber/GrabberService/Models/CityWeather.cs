@@ -8,11 +8,6 @@ namespace GrabberService.Models
         public string CityName { get; set; }
         public DateTime Date { get; set; }
         public List<DayWeather> WeatherByDays { get; set; }
-        
-        public void AddCityName(Dictionary<string, string> mainCities, string link)
-        {
-            CityName = mainCities.ContainsKey(link) ? mainCities[link] : "Undefined city";
-        }
     }
 
     public class DayWeather

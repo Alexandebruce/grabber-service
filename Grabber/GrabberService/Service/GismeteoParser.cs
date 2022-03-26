@@ -23,14 +23,15 @@ namespace GrabberService.Service
 
         public async Task Do()
         {
-            var mainPage = await gismeteoGetter.GetMainPage();
-            var weatherInfoList = await GetWeatherInfo(await ParseMainPage(mainPage));
+            await mongoContext.Add(
+                new
+                {
+                    Date = DateTime.Now,
+                    Data = await GetWeatherInfo(await ParseMainPage(await gismeteoGetter.GetMainPage()))
+                }
+            );
 
-            await mongoContext.AddMany(weatherInfoList);
-
-            Console.WriteLine("Кек");
-            
-            //пишем в лог, что всё ок?
+            Console.WriteLine($"Ок at {DateTime.Now}");
         }
 
         private async Task<Dictionary<string, string>> ParseMainPage(string htmlString)
