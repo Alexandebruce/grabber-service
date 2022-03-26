@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
 using AngleSharp.Html.Parser;
+using GrabberService.Dao.Interfaces;
 using GrabberService.Models;
 using GrabberService.Service.Interfaces;
 
@@ -11,22 +12,24 @@ namespace GrabberService.Service
     public class GismeteoParser : IGismeteoParser
     {
         private readonly IGismeteoGetter gismeteoGetter;
+        private readonly IMongoContext mongoContext;
         private const int Days = 10;
 
-        public GismeteoParser(IGismeteoGetter gismeteoGetter)
+        public GismeteoParser(IGismeteoGetter gismeteoGetter, IMongoContext mongoContext)
         {
             this.gismeteoGetter = gismeteoGetter;
+            this.mongoContext = mongoContext;
         }
 
         public async Task Do()
         {
             var mainPage = await gismeteoGetter.GetMainPage();
-            var weatherInfo = await GetWeatherInfo(await ParseMainPage(mainPage));
-            
+            var weatherInfoList = await GetWeatherInfo(await ParseMainPage(mainPage));
+
+            await mongoContext.AddMany(weatherInfoList);
 
             Console.WriteLine("Кек");
-            //формируем объекты для монго
-            //пишем в монго данные
+            
             //пишем в лог, что всё ок?
         }
 

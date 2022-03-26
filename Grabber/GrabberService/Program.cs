@@ -23,8 +23,10 @@ namespace GrabberService
                     IConfiguration configuration = hostContext.Configuration;
                     
                     services.AddTransient<IHttpClient>(_ => new HttpClient(configuration.Get<AppSettings>()));
+                    services.AddTransient<IMongoContext>(_ => new MongoContext(configuration.Get<AppSettings>()));
                     services.AddTransient<IGismeteoGetter>(provider => new GismeteoGetter(provider.GetService<IHttpClient>()));
-                    services.AddTransient<IGismeteoParser>(provider => new GismeteoParser(provider.GetService<IGismeteoGetter>()));
+                    services.AddTransient<IGismeteoParser>(provider => 
+                        new GismeteoParser(provider.GetService<IGismeteoGetter>(), provider.GetService<IMongoContext>()));
                     services.AddHostedService<Worker>();
                 });
     }

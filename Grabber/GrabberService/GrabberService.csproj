@@ -8,5 +8,6 @@
     <ItemGroup>
         <PackageReference Include="AngleSharp" Version="1.0.0-alpha-844" />
         <PackageReference Include="Microsoft.Extensions.Hosting" Version="5.0.0" />
+        <PackageReference Include="MongoDB.Driver" Version="2.15.0" />
     </ItemGroup>
 </Project>
