@@ -1,9 +1,26 @@
-﻿using System.Collections.Generic;
+﻿using System;
+using System.Collections.Generic;
 
 namespace GrabberService.Models
 {
     public class CityWeather
     {
-        public List<int> TemperatureC { get; set; }
+        public string CityName { get; set; }
+        public DateTime Date { get; set; }
+        public List<DayWeather> WeatherByDays { get; set; }
+    }
+
+    public class DayWeather
+    {
+        public DailyTemperature TemperatureC { get; set; }
+        public string WeatherDescription { get; set; }
+        public string WindSpeed { get; set; }
+        public string Precipitation { get; set; }
+    }
+    
+    public class DailyTemperature
+    {
+        public string Minimum { get; set; }
+        public string Maximum { get; set; }
     }
 }
