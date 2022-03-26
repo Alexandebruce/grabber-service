@@ -47,6 +47,11 @@ namespace GrabberService.Service
             var weatherlist  = classWigetWeather?.QuerySelectorAll("[class='weather-icon tooltip']");
             var dailyWeather = weatherlist.Select(x => x.Attributes["data-text"]?.Value ?? string.Empty).ToList();
 
+            var classWigetWindSpeed=  document.GetElementsByClassName("widget-row widget-row-wind-gust row-with-caption")
+                .FirstOrDefault();
+            var windSpeedList = classWigetWindSpeed?.QuerySelectorAll("[class='row-item']");
+            var windSpeedListStr = windSpeedList.Select(x => x.Children)
+                .Select(x => x.ElementAtOrDefault(1)?.TextContent ?? string.Empty);
             
             
             
@@ -57,7 +62,8 @@ namespace GrabberService.Service
                     new DayWeather
                     {
                         TemperatureC = dailyTemperature.ElementAtOrDefault(i),
-                        WeatherDescription = dailyWeather.ElementAtOrDefault(i) ?? string.Empty
+                        WeatherDescription = dailyWeather.ElementAtOrDefault(i) ?? string.Empty,
+                        WindSpeed = windSpeedListStr.ElementAtOrDefault(i) ?? string.Empty,
                     });
             }
 
