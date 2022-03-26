@@ -9,7 +9,6 @@ namespace GrabberService.Dao
     public class HttpClient : IHttpClient
     {
         private readonly string mainPageAddress;
-
         public HttpClient(AppSettings appSettings)
         {
             mainPageAddress = appSettings.GismeteoUrl ?? string.Empty;

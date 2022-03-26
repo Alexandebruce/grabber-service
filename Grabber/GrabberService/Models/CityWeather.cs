@@ -16,9 +16,18 @@ namespace GrabberService.Models
         public string WeatherDescription { get; set; }
         public string WindSpeed { get; set; }
         public string Precipitation { get; set; }
+        public DailyPressure PressureAtm { get; set; }
+        public string Humidity { get; set; }
+        public string Geomagnetic { get; set; }
     }
     
     public class DailyTemperature
+    {
+        public string Minimum { get; set; }
+        public string Maximum { get; set; }
+    }
+    
+    public class DailyPressure
     {
         public string Minimum { get; set; }
         public string Maximum { get; set; }
