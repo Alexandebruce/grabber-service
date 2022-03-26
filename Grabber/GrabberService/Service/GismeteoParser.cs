@@ -21,7 +21,7 @@ namespace GrabberService.Service
             this.mongoContext = mongoContext;
         }
 
-        public async Task Do()
+        public async Task<string> Do()
         {
             await mongoContext.Add(
                 new
@@ -31,7 +31,7 @@ namespace GrabberService.Service
                 }
             );
 
-            Console.WriteLine($"Ок at {DateTime.Now}");
+            return $"Ок at {DateTime.Now}";
         }
 
         private async Task<Dictionary<string, string>> ParseMainPage(string htmlString)

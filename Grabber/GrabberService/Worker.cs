@@ -26,7 +26,7 @@ namespace GrabberService
                 {
                     logger.LogInformation("Worker running at: {time}", DateTimeOffset.Now);
 
-                    await gismeteoParser.Do();
+                    logger.LogInformation(await gismeteoParser.Do());
                 }
                 catch (Exception ex)
                 {
