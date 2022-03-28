@@ -25,7 +25,7 @@ namespace GrabberService.Dao
 
             if (httpResponseMessage.IsSuccessStatusCode)
             {
-                using var contentStream =
+                await using var contentStream =
                     await httpResponseMessage.Content.ReadAsStreamAsync();
                 
                 StreamReader reader = new StreamReader(contentStream);

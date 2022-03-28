@@ -2,6 +2,7 @@
 using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
+using AngleSharp.Html.Dom;
 using AngleSharp.Html.Parser;
 using GrabberService.Dao.Interfaces;
 using GrabberService.Models;
@@ -65,63 +66,19 @@ namespace GrabberService.Service
             var parser = new HtmlParser();
             var document = await parser.ParseDocumentAsync(cityPageHtml);
 
-            var classWidgetTemperature = document.GetElementsByClassName("widget-row-chart widget-row-chart-temperature")
-                .FirstOrDefault();
-            
-            var dailyTemperature = classWidgetTemperature?.QuerySelectorAll("[class='unit unit_temperature_c']")
-                .Select((x, y) => new {Index = y, Value = x.TextContent})
-                .GroupBy(x => x.Index / 2)
-                .Select( x => new DailyTemperature
-                    {
-                        Maximum = x.ElementAtOrDefault(0)?.Value ?? string.Empty,
-                        Minimum = x.ElementAtOrDefault(1)?.Value ?? string.Empty,
-                    })
-                .ToList();
-            
-            var classWigetWeather=  document.GetElementsByClassName("widget-row widget-row-icon")
-                .FirstOrDefault();
-            var weatherlist  = classWigetWeather?.QuerySelectorAll("[class='weather-icon tooltip']");
-            var dailyWeather = weatherlist.Select(x => x.Attributes["data-text"]?.Value ?? string.Empty).ToList();
-
-            var classWigetWindSpeed=  document.GetElementsByClassName("widget-row widget-row-wind-gust row-with-caption")
-                .FirstOrDefault();
-            var windSpeedListStr = classWigetWindSpeed?.QuerySelectorAll("[class='row-item']").Select(x => x.Children)
-                .Select(x => x.ElementAtOrDefault(1)?.TextContent ?? string.Empty);
-
-            var precipitationClass = document.GetElementsByClassName("widget-row widget-row-precipitation-bars row-with-caption")
-                .FirstOrDefault();;
-            var precipitationList = precipitationClass?.QuerySelectorAll("[class='row-item']").Select(x => x?.TextContent ?? string.Empty);
-
-            var pressure = document.GetElementsByClassName("widget-row-chart widget-row-chart-pressure").FirstOrDefault();
-            var pressureList = pressure?.QuerySelectorAll("[class='unit unit_pressure_mm_hg_atm']")
-                .Select((x, y) => new {Index = y, Value = x.TextContent})
-                .GroupBy(x => x.Index / 2)
-                .Select( x => new DailyPressure
-                {
-                    Maximum = x.ElementAtOrDefault(0)?.Value ?? string.Empty,
-                    Minimum = x.ElementAtOrDefault(1)?.Value ?? string.Empty,
-                })
-                .ToList();
-
-            var humidity = document.GetElementsByClassName("widget-row widget-row-humidity").FirstOrDefault();
-            var humidityList = humidity.Children.Select(x => x?.TextContent ?? string.Empty);
-
-            var geomagnetic = document.GetElementsByClassName("widget-row widget-row-geomagnetic").FirstOrDefault();
-            var geomagneticList = geomagnetic?.Children.Select(x => x?.TextContent ?? string.Empty);
-            
             var dayWeatherList = new List<DayWeather>();
             for (int i = 0; i < Days; i++)
             {
                 dayWeatherList.Add(
                     new DayWeather
                     {
-                        TemperatureC = dailyTemperature.ElementAtOrDefault(i),
-                        WeatherDescription = dailyWeather.ElementAtOrDefault(i) ?? string.Empty,
-                        WindSpeed = windSpeedListStr.ElementAtOrDefault(i) ?? string.Empty,
-                        Precipitation = precipitationList.ElementAtOrDefault(i) ?? string.Empty,
-                        PressureAtm = pressureList.ElementAtOrDefault(i),
-                        Humidity = humidityList.ElementAtOrDefault(i) ?? string.Empty,
-                        Geomagnetic = geomagneticList.ElementAtOrDefault(i) ?? string.Empty,
+                        TemperatureC = ParseDailyTemperature(document).ElementAtOrDefault(i),
+                        WeatherDescription = ParseDailyWeather(document).ElementAtOrDefault(i) ?? string.Empty,
+                        WindSpeed = ParseDailyWidSpeed(document).ElementAtOrDefault(i) ?? string.Empty,
+                        Precipitation = ParseDailyPrecipitation(document).ElementAtOrDefault(i) ?? string.Empty,
+                        PressureAtm = ParseDailyPressure(document).ElementAtOrDefault(i),
+                        Humidity = ParseDailyHumidity(document).ElementAtOrDefault(i) ?? string.Empty,
+                        Geomagnetic = ParseDailyGeomagnetic(document).ElementAtOrDefault(i) ?? string.Empty,
                     });
             }
 
@@ -131,6 +88,85 @@ namespace GrabberService.Service
                 Date = DateTime.Now,
                 WeatherByDays = dayWeatherList,
             };
+        }
+
+        private List<DailyTemperature> ParseDailyTemperature(IHtmlDocument document)
+        {
+            var classWidgetTemperature = document.GetElementsByClassName("widget-row-chart widget-row-chart-temperature")
+                .FirstOrDefault();
+            
+            return classWidgetTemperature?.QuerySelectorAll("[class='unit unit_temperature_c']")
+                .Select((x, y) => new {Index = y, Value = x.TextContent})
+                .GroupBy(x => x.Index / 2)
+                .Select( x => new DailyTemperature
+                {
+                    Maximum = x.ElementAtOrDefault(0)?.Value ?? string.Empty,
+                    Minimum = x.ElementAtOrDefault(1)?.Value ?? string.Empty,
+                })
+                .ToList();
+        }
+
+        private List<string> ParseDailyWeather(IHtmlDocument document)
+        {
+            var classWigetWeather=  document.GetElementsByClassName("widget-row widget-row-icon")
+                .FirstOrDefault();
+
+            return classWigetWeather?.QuerySelectorAll("[class='weather-icon tooltip']")
+                .Select(x => x.Attributes["data-text"]?.Value ?? string.Empty)
+                .ToList();
+        }
+
+        private List<string> ParseDailyWidSpeed(IHtmlDocument document)
+        {
+            var classWigetWindSpeed=  document.GetElementsByClassName("widget-row widget-row-wind-gust row-with-caption")
+                .FirstOrDefault();
+            
+            return classWigetWindSpeed?.QuerySelectorAll("[class='row-item']")
+                .Select(x => x.Children)
+                .Select(x => x.ElementAtOrDefault(1)?.TextContent ?? string.Empty)
+                .ToList();
+        }
+
+        private List<string> ParseDailyPrecipitation(IHtmlDocument document)
+        {
+            var precipitationClass = document.GetElementsByClassName("widget-row widget-row-precipitation-bars row-with-caption")
+                .FirstOrDefault();
+            
+           return precipitationClass?.QuerySelectorAll("[class='row-item']")
+               .Select(x => x?.TextContent ?? string.Empty)
+               .ToList();
+        }
+
+        private List<DailyPressure> ParseDailyPressure(IHtmlDocument document)
+        {
+            var pressure = document.GetElementsByClassName("widget-row-chart widget-row-chart-pressure").FirstOrDefault();
+            
+            return pressure?.QuerySelectorAll("[class='unit unit_pressure_mm_hg_atm']")
+                .Select((x, y) => new {Index = y, Value = x.TextContent})
+                .GroupBy(x => x.Index / 2)
+                .Select( x => new DailyPressure
+                {
+                    Maximum = x.ElementAtOrDefault(0)?.Value ?? string.Empty,
+                    Minimum = x.ElementAtOrDefault(1)?.Value ?? string.Empty,
+                })
+                .ToList();
+        }
+
+        private List<string> ParseDailyHumidity(IHtmlDocument document)
+        {
+            var humidity = document.GetElementsByClassName("widget-row widget-row-humidity").FirstOrDefault();
+            
+            return humidity?.Children
+                .Select(x => x?.TextContent ?? string.Empty)
+                .ToList();
+        }
+
+        private List<string> ParseDailyGeomagnetic(IHtmlDocument document)
+        {
+            var geomagnetic = document.GetElementsByClassName("widget-row widget-row-geomagnetic").FirstOrDefault();
+            return geomagnetic?.Children
+                .Select(x => x?.TextContent ?? string.Empty)
+                .ToList();
         }
     }
 }
