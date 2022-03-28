@@ -45,7 +45,7 @@ namespace GrabberService.Service
                 .QuerySelectorAll("[class='list-item']")
                 .Select(l => new KeyValuePair<string, string>(
                         l.FirstElementChild?.Attributes["href"]?.Value ?? string.Empty,
-                        l.FirstElementChild?.TextContent
+                        l.FirstElementChild?.TextContent ?? string.Empty
                     )).ToList().ToDictionary(x => x.Key, x => x.Value);
         }
 
