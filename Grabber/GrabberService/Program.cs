@@ -1,3 +1,4 @@
+using System.Net.Http;
 using GrabberService.Dao;
 using GrabberService.Dao.Interfaces;
 using GrabberService.Properties;
@@ -6,6 +7,7 @@ using GrabberService.Service.Interfaces;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Hosting;
+using HttpClient = GrabberService.Dao.HttpClient;
 
 namespace GrabberService
 {
@@ -21,8 +23,9 @@ namespace GrabberService
                 .ConfigureServices((hostContext, services) =>
                 {
                     IConfiguration configuration = hostContext.Configuration;
-                    
-                    services.AddTransient<IHttpClient>(_ => new HttpClient(configuration.Get<AppSettings>()));
+
+                    services.AddHttpClient();
+                    services.AddTransient<IHttpClient>(provider => new HttpClient(provider.GetService<IHttpClientFactory>(),configuration.Get<AppSettings>()));
                     services.AddTransient<IMongoContext>(_ => new MongoContext(configuration.Get<AppSettings>()));
                     services.AddTransient<IGismeteoGetter>(provider => new GismeteoGetter(provider.GetService<IHttpClient>()));
                     services.AddTransient<IGismeteoParser>(provider => 
