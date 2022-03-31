@@ -67,18 +67,26 @@ namespace GrabberService.Service
             var document = await parser.ParseDocumentAsync(cityPageHtml);
 
             var dayWeatherList = new List<DayWeather>();
+            var dailyTemperature = ParseDailyTemperature(document);
+            var dailyWeather = ParseDailyWeather(document);
+            var dailyWind = ParseDailyWidSpeed(document);
+            var dailyPrecipitation = ParseDailyPrecipitation(document);
+            var dailyPressure = ParseDailyPressure(document);
+            var dailyHumidity = ParseDailyHumidity(document);
+            var dailyGeomagnetic = ParseDailyGeomagnetic(document);
+            
             for (int i = 0; i < Days; i++)
             {
                 dayWeatherList.Add(
                     new DayWeather
                     {
-                        TemperatureC = ParseDailyTemperature(document).ElementAtOrDefault(i),
-                        WeatherDescription = ParseDailyWeather(document).ElementAtOrDefault(i) ?? string.Empty,
-                        WindSpeed = ParseDailyWidSpeed(document).ElementAtOrDefault(i) ?? string.Empty,
-                        Precipitation = ParseDailyPrecipitation(document).ElementAtOrDefault(i) ?? string.Empty,
-                        PressureAtm = ParseDailyPressure(document).ElementAtOrDefault(i),
-                        Humidity = ParseDailyHumidity(document).ElementAtOrDefault(i) ?? string.Empty,
-                        Geomagnetic = ParseDailyGeomagnetic(document).ElementAtOrDefault(i) ?? string.Empty,
+                        TemperatureC = dailyTemperature.ElementAtOrDefault(i),
+                        WeatherDescription = dailyWeather.ElementAtOrDefault(i) ?? string.Empty,
+                        WindSpeed = dailyWind.ElementAtOrDefault(i) ?? string.Empty,
+                        Precipitation = dailyPrecipitation.ElementAtOrDefault(i) ?? string.Empty,
+                        PressureAtm = dailyPressure.ElementAtOrDefault(i),
+                        Humidity = dailyHumidity.ElementAtOrDefault(i) ?? string.Empty,
+                        Geomagnetic = dailyGeomagnetic.ElementAtOrDefault(i) ?? string.Empty,
                     });
             }
 
